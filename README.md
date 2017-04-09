@@ -7,8 +7,7 @@ Some of the codes are still in progress. Thus, if you want to use the codes, ple
 Thanks!
 
 Choong-Wan (Wani) Woo<br>
-[Computational, Cognitive, Affective Neuroscience lab (Cocoan lab)]
-(http://cocoanlab.github.io)<br>
+[Computational, Cognitive, Affective Neuroscience lab (Cocoan lab)](http://cocoanlab.github.io)<br>
 [Center for Neuroscience Imaging Research](http://cnir.ibs.re.kr/html/cnir_en/)<br>
 [Global BME](http://gbme.skku.edu/eng_gbme/index.jsp), Sungkyunkwan University
 
