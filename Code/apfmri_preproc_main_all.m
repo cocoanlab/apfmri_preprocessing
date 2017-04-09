@@ -12,31 +12,31 @@ subject_dir = apfmri_structural_0_make_directories(subject_code);
 
 %% PREPROC: RUN THESE ON STRUCTURAL SCANS DURING RUN 1 (AFTER STRUCTURAL SCAN)
 
-%% 2. DICOM TO NIFTI: STRUCTURAL ==========================================
+%% 2(QUICK). DICOM TO NIFTI: STRUCTURAL ===================================
 
 apfmri_structural_1_dicom2nifti(subject_dir);
 
-%% 3. DICOM TO NIFTI: FUNCTIONAL -- to get reference ======================
+%% 3(QUICK). DICOM TO NIFTI: FUNCTIONAL -- to get reference ===============
 
 session_num = 1:10;
 disdaq = 5;
 apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
-%% 4. save implicit mask and mean functional image ========================
+%% 4(QUICK). save implicit mask and mean functional image =================
 
 apfmri_functional_2_implicitmask_savemean(subject_dir, session_num);
 
 
-%% 5. COREGISTRATION TO FUNCTIONAL
+%% 5(QUICK). COREGISTRATION TO FUNCTIONAL
 
 apfmri_structural_2_coregistration(subject_dir);
 
-%% 4. REORIENTATION =======================================================
+%% 4(QUICK). REORIENTATION ================================================
 
 apfmri_structural_3_reorientation(subject_dir)
 
 
-%% 5. SAVE REORIENTATION MATRIX
+%% 5(QUICK). SAVE REORIENTATION MATRIX
 apfmri_structural_4_save_reorientation_mat(subject_dir);
 
 
@@ -45,24 +45,24 @@ apfmri_structural_4_save_reorientation_mat(subject_dir);
 apfmri_structural_5_segment(subject_dir);
 
 
-%% 7. DICOM TO NIFTI: FUNCTIONAL (RUN2) ===================================
+%% 7(QUICK). DICOM TO NIFTI: FUNCTIONAL (RUN2) ============================
 session_num = 2;
 disdaq = 5;
 
 apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
 
-%% 8. Reorientation =======================================================
+%% 8(QUICK). Reorientation ================================================
 session_num = 1:10;
 apfmri_functional_3_reorient(subject_dir, session_num);
 
 
-%% 9. Detect spikes, outliers =============================================
+%% 9(QUICK). Detect spikes, outliers ======================================
  
 apfmri_functional_4_spike_id(subject_dir, session_num);
  
 
-%% 10. SLICE TIME CORRECTION ===============================================
+%% 10. SLICE TIME CORRECTION ==============================================
 
 % apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD');
 
@@ -73,26 +73,26 @@ slice_time = hdr.Private_0019_1029;
 
 apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD', 'slice_time', slice_time);
 
-%% 11. MOTION CORRECTION ===================================================
+%% 11. MOTION CORRECTION ==================================================
 
 apfmri_functional_6_motion_correction(subject_dir, session_num);
 
 
-%% 12. Normalization =======================================================
+%% 12. Normalization ======================================================
 
 apfmri_functional_7_normalization(subject_dir, session_num);
 
 
-%% 12. Smoothing 
+%% 13. Smoothing 
 
-PREPROC = apfmri_functional_8_smooth(subject_dir, session_num);
+apfmri_functional_8_smooth(subject_dir, session_num);
 
-%% 13. Move files
+%% 14. Move files
 
 PREPROC = apfmri_functional_9_move_clean_files(subject_dir, session_num);
 
 
-%% 13. Regression
+%% 13(QUICK). Regression
 
 dat = fmri_data_rhesus(PREPROC.swrao_func_files{session_num});
 dat.X = out.event_regressor(:,1);
