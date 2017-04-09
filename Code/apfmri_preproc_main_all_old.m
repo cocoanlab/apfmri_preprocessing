@@ -1,13 +1,11 @@
 %% 1. BASIC SETTING
 
-script_dir = '/Users/clinpsywoo/cocoanlab_hbmnas/animal_fmri/analyses/code';
-addpath(genpath(script_dir));
+basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI';
+pathdef = fullfile(basedir, 'experiment_path_def.m');
+run(pathdef);
 
-atlas_dir = '/Users/clinpsywoo/cocoanlab_hbmnas/animal_fmri/Wisconsin_atlas';
-addpath(atlas_dir);
-
-subject_dir = '/Users/clinpsywoo/cocoanlab_data/APFmri/mango_170405/Imaging';
-
+subject_code = 'mango_170405';
+subject_dir = apfmri_structural_0_make_directories(subject_code);
 
 %% PREPROC: RUN THESE ON STRUCTURAL SCANS DURING RUN 1 (AFTER STRUCTURAL SCAN)
 
@@ -17,7 +15,7 @@ apfmri_structural_1_dicom2nifti(subject_dir);
 
 %% 3. DICOM TO NIFTI: FUNCTIONAL -- to get reference ======================
 
-session_num = 1:10;
+session_num = 1;
 disdaq = 5;
 apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
@@ -52,7 +50,7 @@ apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
 
 %% 8. Reorientation =======================================================
-session_num = 1:10;
+
 apfmri_functional_3_reorient(subject_dir, session_num);
 
 
@@ -63,7 +61,7 @@ apfmri_functional_4_spike_id(subject_dir, session_num);
 
 %% 10. SLICE TIME CORRECTION ===============================================
 
-% apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD');
+apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD');
 
 %% optional
 dicom_img = filenames(fullfile(subject_dir, 'Functional', 'dicom', 'r02', '*IMA'));
@@ -85,10 +83,6 @@ apfmri_functional_7_normalization(subject_dir, session_num);
 %% 12. Smoothing 
 
 PREPROC = apfmri_functional_8_smooth(subject_dir, session_num);
-
-%% 13. Move files
-
-PREPROC = apfmri_functional_9_move_clean_files(subject_dir, session_num);
 
 
 %% 13. Regression
