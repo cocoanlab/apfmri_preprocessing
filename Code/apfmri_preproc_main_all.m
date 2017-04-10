@@ -94,24 +94,41 @@ PREPROC = apfmri_functional_9_move_clean_files(subject_dir, session_num);
 
 %% 13(QUICK). Regression
 
-dat = fmri_data_rhesus(PREPROC.swrao_func_files{session_num});
+basedir = '/Volumes/Wani_8T/data/APFmri/mango_170405/';
+behavioral_datdir = fullfile(basedir, 'Behavioral');
+
+i = 10;
+datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_mango_170405_sess%d_*mat', i)), 'char');
+load(datfiles);
+
+dat = fmri_data_rhesus(PREPROC.swrao_func_files{i});
+disdaq = 5;
+img_n = out.img_number-disdaq;
+out.event_regressor = onsets2fmridesign([(out.onsets+2)' 3*ones(size(out.onsets'))], out.TR, img_n*out.TR, spm_hrf(1));
+
 dat.X = out.event_regressor(:,1);
+dat.covariates = [PREPROC.nuisance.mvmt_covariates{i} PREPROC.nuisance.mvmt_covariates{i}.^2 ...
+    [zeros(1,6); diff(PREPROC.nuisance.mvmt_covariates{i})] [zeros(1,6); diff(PREPROC.nuisance.mvmt_covariates{i})].^2];
+
+spikes = PREPROC.nuisance.spike_covariates((img_n*(i-1)+1):(img_n*i),:);
+
+dat.covariates = [dat.covariates spikes(:,any(spikes))];
 
 %% Regression
-stats = regress(dat, .05, 'unc');
+stats = regress(dat, .001, 'unc');
 
 stats.b.dat = stats.b.dat(:,1);
 stats.b.sig = stats.b.sig(:,1);
 stats.b.p = stats.b.p(:,1);
 stats.b.ste = stats.b.ste(:,1);
 
-%% visualization without thresholding
+% visualization without thresholding
 b_dat = fmri_data(stats.b);
 orthviews_rhesus(b_dat)
 
-%% visualization with thresholding
+% visualization with thresholding
 
 b_dat.dat = b_dat.dat .* stats.b.sig;
-orthviews_rhesus(t_dat)
+orthviews_rhesus(b_dat)
 
 

@@ -1,4 +1,4 @@
-function cl = orthviews_rhesus(image_obj, varargin)
+function orthviews_rhesus(image_obj, varargin)
 
 % Orthview (SPM) wrapper for rhesus monkey:
 %   This uses canlab image_vector (or fmri_data, statistic_image) objects.
@@ -25,7 +25,7 @@ function cl = orthviews_rhesus(image_obj, varargin)
 %overlay = which('SPM8_colin27T1_seg.img');
 overlay = which('wisconsin_rhesus_atlas.nii');
 
-cl = orthviews(image_obj, 'overlay', overlay, varargin);
+orthviews(image_obj, 'overlay', overlay, varargin);
 
 end % function
 
