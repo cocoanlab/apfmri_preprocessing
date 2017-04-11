@@ -9,9 +9,9 @@ function subject_dir = apfmri_structural_0_make_directories(subject_code, vararg
 
 if isempty(varargin)
     basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI';
-    subject_dir = fullfile(basedir, 'data', subject_code);
+    subject_dir = fullfile(basedir, 'data', subject_code, 'Imaging');
 else
-    subject_dir = fullfile(varargin{1}, subject_code);
+    subject_dir = fullfile(varargin{1}, subject_code, 'Imaging');
 end
 
 Structural_dir = fullfile(subject_dir, 'Structural');
