@@ -113,8 +113,8 @@ load(datfiles);
 PREPROC = save_load_PREPROC(subject_dir, 'load');
 
 dat = fmri_data_rhesus(PREPROC.o_func_files{i});
-dat = preprocess(dat, 'smooth', 3);
-dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR);
+dat = preprocess(dat, 'smooth', 3);  % smooth
+dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR); % high-pass filter
 
 % disdaq = 5;
 % img_n = out.img_number-disdaq;
@@ -124,6 +124,8 @@ dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR);
 
 dat.X = out.event_regressor(:,1);
 dat.covariates = PREPROC.nuisance.spike_covariates{i};
+linear_trend = scale(1:size(dat.covariates,1),1)';
+dat.covariates = [dat.covariates linear_trend]; % linear trend
 
 
 %% 13-2 (Using all the session data). Regression 
@@ -137,7 +139,7 @@ load(datfiles);
 PREPROC = save_load_PREPROC(subject_dir, 'load');
 
 dat = fmri_data_rhesus(PREPROC.swrao_func_files{i});
-dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR);
+dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR); % high-pass filter
 
 % disdaq = 5;
 % img_n = out.img_number-disdaq;
@@ -152,6 +154,10 @@ dat.covariates = [PREPROC.nuisance.mvmt_covariates{i} PREPROC.nuisance.mvmt_cova
 spikes = PREPROC.nuisance.spike_covariates((img_n*(i-1)+1):(img_n*i),:);
 
 dat.covariates = [dat.covariates spikes(:,any(spikes))];
+
+linear_trend = scale(1:size(dat.covariates,1),1)';
+dat.covariates = [dat.covariates linear_trend]; % linear trend
+
 
 
 %% 14(Both quick and no-quick). Regression and threshold 
