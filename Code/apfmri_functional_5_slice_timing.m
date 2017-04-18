@@ -84,7 +84,7 @@ PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
 slice_timing_job{1}.spm.temporal.st.scans{1} = spm_image_list(char(PREPROC.o_func_files{session_num}),1); % individual 3d images in cell str
 
 %% 1. nslices
-Vfirst_vol = spm_vol([PREPROC.o_func_files{1} ',1']);
+Vfirst_vol = spm_vol([PREPROC.o_func_files{session_num(1)} ',1']);
 num_slices = Vfirst_vol(1).dim(3);
 slice_timing_job{1}.spm.temporal.st.nslices = num_slices; % number of slices
 

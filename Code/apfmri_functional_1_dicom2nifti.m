@@ -1,4 +1,4 @@
-function PREPROC = apfmri_functional_1_dicom2nifti(subject_dir, session_n, disdaq)
+function PREPROC = apfmri_functional_1_dicom2nifti(subject_dir, session_n, disdaq_n)
 
 % This function saves the dicom files into nifti files in the Functional 
 % image directory (subject_dir/Functional/dicom/r##, e.g., r01). 
@@ -49,17 +49,24 @@ PREPROC = save_load_PREPROC(subject_dir, 'load'); % load PREPROC
 
 for session_num = session_n
     
+    if numel(disdaq_n)>1
+        disdaq = disdaq_n(session_num);
+    end
+    
     str = ['Working on session #' num2str(session_num)];
     disp(str);
     
-    outdir = fullfile(subject_dir, 'Functional', 'raw', sprintf('r%02d',session_num));
-    datdir = fullfile(subject_dir, 'Functional', 'dicom', sprintf('r%02d',session_num));
+    datdir = filenames(fullfile(subject_dir, 'Functional', 'dicom', sprintf('r%02d*',session_num)));
+    [~, temp] = fileparts(datdir{1});
+    
+    outdir = fullfile(subject_dir, 'Functional', 'raw', temp);
+    
     
     if ~exist(outdir, 'dir')
         mkdir(outdir);
     end
     
-    [~, h] = dicm2nii(filenames(fullfile(datdir, '*IMA')), outdir, 4);
+    [~, h] = dicm2nii(filenames(char(fullfile(datdir, '*IMA'))), outdir, 4);
     f = fields(h);
     
     nifti_imgs = filenames(fullfile(outdir, [f{1} '*.nii']), 'absolute');
@@ -74,7 +81,7 @@ for session_num = session_n
     disp('Saving disdaq_image...')
     spm_file_merge(nifti_imgs(1:disdaq), fullfile(outdir, sprintf('disdaq_first_%02d_images.nii', disdaq)));
     disp('Converting 3d images to 4d images...')
-    spm_file_merge(nifti_imgs(disdaq+1:end), output_4d_fnames);
+    spm_file_merge(nifti_imgs((disdaq+1):end), output_4d_fnames);
     
     delete(fullfile(outdir, [f{1} '*.nii']));
     

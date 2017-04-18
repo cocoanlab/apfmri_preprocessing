@@ -76,9 +76,11 @@ if numel(session_num) == 1
     PREPROC.mvmt_param_files{session_num} = fullfile(d, ['rp_' f '.txt']);
     PREPROC.nuisance.mvmt_covariates{session_num} = textread(PREPROC.mvmt_param_files{session_num});
 else
+    [d, f] = fileparts(PREPROC.ao_func_files{min(session_num)});
+    PREPROC.mvmt_param_files{min(session_num)} = fullfile(d, ['rp_' f '.txt']);
     temp_mvmt = textread(PREPROC.mvmt_param_files{min(session_num)});
     
-    for i = 1:numel(session_num)
+    for i = session_num
         [d,f] = fileparts(PREPROC.rao_func_files{i});
         load(fullfile(d, [f '.mat']))
         images_per_session = size(mat,3);

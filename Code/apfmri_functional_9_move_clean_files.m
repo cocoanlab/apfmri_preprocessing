@@ -46,10 +46,10 @@ for i = session_num
     
     if do_move
         movefile(PREPROC.swrao_func_files{i}, fullfile(preproc_dir, r, [f1 '.nii']));
-        movefile(fullfile(raw_dir, r, [f1 '.mat']), fullfile(preproc_dir, r, [f1 '.mat']));
+        movefile(fullfile(fileparts(PREPROC.swrao_func_files{i}), [f1 '.mat']), fullfile(preproc_dir, r, [f1 '.mat']));
         PREPROC.swrao_func_files{i} = fullfile(preproc_dir, r, [f1 '.nii']);
         movefile(PREPROC.wrao_func_files{i}, fullfile(preproc_dir, r, [f2 '.nii']));
-        movefile(fullfile(raw_dir, r, [f2 '.mat']), fullfile(preproc_dir, r, [f2 '.mat']));
+        movefile(fullfile(fileparts(PREPROC.wrao_func_files{i}), [f2 '.mat']), fullfile(preproc_dir, r, [f2 '.mat']));
         PREPROC.wrao_func_files{i} = fullfile(preproc_dir, r, [f2 '.nii']);
     end
     

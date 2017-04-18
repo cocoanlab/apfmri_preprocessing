@@ -358,7 +358,7 @@ function varargout = dicm2nii(src, niiFolder, fmt)
 %    GE non-axial slice (phase: ROW) bvec sign
 %    Phase image flag for GE
 
-if nargout, varargout{1} = ''; end
+if nargout, varargout{1} = ''; varargout{2} = ''; end
 if nargin==3 && ischar(fmt) && strcmp(fmt, 'func_handle') % special purpose
     varargout{1} = str2func(niiFolder);
     return;

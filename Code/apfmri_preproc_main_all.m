@@ -1,11 +1,15 @@
 %% 1. BASIC SETTING
 
-scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing';
-apfmri_pathdef(scriptdir)
+% scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
+scriptdir = '/Users/clinpsywoo/github/apfmri_preprocessing'; % Wani's computer setting
+apfmri_pathdef(scriptdir);
 
 %% Subject directory, and create some data directories for you
-subject_code = 'mango_170405';
-subject_dir = apfmri_structural_0_make_directories(subject_code);
+
+% basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI'; % CNIR MRI setting
+basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
+subject_code = 'maple_170412_r12';
+subject_dir = apfmri_structural_0_make_directories(subject_code, basedir);
 
 % or directly provide subject_dir
 % subject_dir = '/Users/clinpsywoo/cocoanlab_data/APFmri/mango_170405';
@@ -20,10 +24,15 @@ apfmri_structural_1_dicom2nifti(subject_dir);
 
 session_num = 1;
 disdaq = 5;
+
+% session_num = 1:8;
+% disdaq = [5 5 5 5 5 4 5 5]; % you can put different numbers of disdaq
+
 apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
 %% 4(QUICK). save implicit mask and mean functional image =================
 
+% session_num = 1:2;
 apfmri_functional_2_implicitmask_savemean(subject_dir, session_num);
 
 
@@ -53,7 +62,7 @@ apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
 
 %% 8(QUICK). Reorientation ================================================
-session_num = 2;
+% session_num = 1:2;
 apfmri_functional_3_reorient(subject_dir, session_num);
 
 
@@ -66,12 +75,12 @@ apfmri_functional_4_spike_id(subject_dir, session_num);
 
 % apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD');
 
-%% optional
-dicom_img = filenames(fullfile(subject_dir, 'Functional', 'dicom', 'r02', '*IMA'));
+%% OPTIONAL: you can directly get slice timing info from dicom file
+dicom_img = filenames(fullfile(subject_dir, 'Functional', 'dicom', 'r01*', '*IMA'));
 hdr = dicominfo(dicom_img{1});
 slice_time = hdr.Private_0019_1029;
 
-apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD', 'slice_time', slice_time);
+apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.4, 'MBF', 2, 'acq', 'interleaved_TD', 'slice_time', slice_time);
 
 %% 11. MOTION CORRECTION ==================================================
 
@@ -89,15 +98,15 @@ apfmri_functional_8_smooth(subject_dir, session_num);
 
 %% 14. Move files
 
-PREPROC = apfmri_functional_9_move_clean_files(subject_dir, session_num);
+apfmri_functional_9_move_clean_files(subject_dir, session_num, 'move_only');
 
 
 %% 13(QUICK). Regression
 
-%basedir = '/Volumes/Wani_8T/data/APFmri/mango_170405/';
-behavioral_datdir = fullfile(fileparts(subject_dir), 'Behavioral');
+basedir = '/Volumes/Wani_8T/data/APFmri/maple_170412/';
+%behavioral_datdir = fullfile(fileparts(subject_dir), 'Behavioral');
 
-i = 2; % run number
+i = 1; % run number
 datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code, i)), 'char');
 load(datfiles);
 
@@ -105,30 +114,36 @@ PREPROC = save_load_PREPROC(subject_dir, 'load');
 
 dat = fmri_data_rhesus(PREPROC.o_func_files{i});
 dat = preprocess(dat, 'smooth', 3);
+dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR);
 
-disdaq = 5;
-img_n = out.img_number-disdaq;
-duration = 1; % in seconds
-
-out.event_regressor = onsets2fmridesign([(out.onsets+2)' duration*ones(size(out.onsets'))], out.TR, img_n*out.TR, spm_hrf(1));
+% disdaq = 5;
+% img_n = out.img_number-disdaq;
+% duration = 4; % in seconds
+% 
+% out.event_regressor = onsets2fmridesign([(out.onsets+out.init)' duration*ones(size(out.onsets'))], out.TR, img_n*out.TR, spm_hrf(1));
 
 dat.X = out.event_regressor(:,1);
-
 dat.covariates = PREPROC.nuisance.spike_covariates{i};
 
 
 %% 13-2 (Using all the session data). Regression 
 
-behavioral_datdir = fullfile(fileparts(subject_dir), 'Behavioral');
+behavioral_datdir = fullfile(fileparts(fileparts(subject_dir)), 'Behavioral', subject_code);
 
-i = 2; % run number
+i = 1; % run number
 datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code, i)), 'char');
 load(datfiles);
 
+PREPROC = save_load_PREPROC(subject_dir, 'load');
+
 dat = fmri_data_rhesus(PREPROC.swrao_func_files{i});
-disdaq = 5;
-img_n = out.img_number-disdaq;
-out.event_regressor = onsets2fmridesign([(out.onsets+2)' 3*ones(size(out.onsets'))], out.TR, img_n*out.TR, spm_hrf(1));
+dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR);
+
+% disdaq = 5;
+% img_n = out.img_number-disdaq;
+% duration = 4;
+% 
+% out.event_regressor = onsets2fmridesign([(out.onsets+out.init)' duration*ones(size(out.onsets'))], out.TR, img_n*out.TR, spm_hrf(1));
 
 dat.X = out.event_regressor(:,1);
 dat.covariates = [PREPROC.nuisance.mvmt_covariates{i} PREPROC.nuisance.mvmt_covariates{i}.^2 ...
@@ -155,5 +170,6 @@ orthviews(b_dat, 'overlay', PREPROC.or_anat_files{1})
 
 b_dat.dat = b_dat.dat .* stats.b.sig;
 orthviews(b_dat, 'overlay', PREPROC.or_anat_files{1})
+orthviews_rhesus(b_dat)
 
 

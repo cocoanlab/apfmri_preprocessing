@@ -15,14 +15,17 @@ end
 
 fprintf('\n');
 out.MID = input('Monkey ID? ','s');
-out.RunN = input('Run number? ','s');
+out.sessN = input('Session number? ','s');
 out.current = input('What is the level of current (mA)? ');
 out.TR = input('TR (in seconds)? ');
 out.img_number = input('How many images? ');
-out.date = date;
+out.disdaq = input('How many disdaqs (the number of images? ');
+out.disdaq_in_secs = out.disdaq * out.TR;
+out.duration = input('Duration of stim? ');
+out.datetime = scn_get_datetime;
 
 %% output filename
-fname = fullfile(savedir, ['out_' out.MID '_sess' out.RunN '_' out.date '.mat']);
+fname = fullfile(savedir, ['out_' out.MID '_sess' out.sessN '_' out.date '.mat']);
 
 out.fname = fname;
 
@@ -30,7 +33,7 @@ if ~exist(savedir, 'dir')
     mkdir(savedir);
 else
     if exist(fname, 'file')
-        str = ['The Monkey ' out.MID ' session ' out.RunN ' data file already exists. Please check!'];
+        str = ['The Monkey ' out.MID ' session ' out.sessN ' data file already exists. Please check!'];
         warning(str);
         s = input('If it''s okay, press r. If you want to quit the program, press q: ', 's'); 
         if strcmp(s, 'r')
@@ -43,32 +46,34 @@ end
 
 %% generating stimulus time sequence
 
-disdaq = 6;
-iti = repmat([13 16 20 25], 1, 7);
+iti = repmat([20 26 32 38], 1, 7);
 iti = iti(randperm(numel(iti)));
+
+out.stim_intensity_mA = repmat([7 8 9 10], 1, 7);
+out.stim_intensity_mA = out.stim_intensity_mA(randperm(numel(out.stim_intensity_mA)));
 
 onsets = [];
 
-onsets(1) = 0;
+onsets(1) = 5;
 for i = 1:(numel(iti)-1)
     onsets(i+1) = onsets(i)+iti(i);
 end
 
-disp('===============================================================');
+disp('========================================================================');
 fprintf('The least number of scans you need is %4d', round((onsets(end)+iti(end))/out.TR));
 fprintf('\nThe number of scans you entered is %4d\n', out.img_number);
-disp('===============================================================');
+disp('========================================================================');
 
-if onsets(end)+iti(end) > out.TR * out.img_number
+if (onsets(end)+iti(end)) > (out.TR * out.img_number)
     str = 'The length of the run is longer than your scan. Please check the number of scans.';
     error(str);
 end
 
 out.iti = iti;
 out.onsets = onsets;
-out.disdaq_in_secs = disdaq;
 
-%out.event_regressor = onsets2fmridesign([out.onsets' ones(size(out.onsets'))], out.TR, out.img_number, spm_hrf(1));
+img_n = out.img_number - out.disdaq;
+out.event_regressor = onsets2fmridesign([out.onsets' out.duration*ones(size(out.onsets'))], out.TR, img_n*out.TR, spm_hrf(1));
 
 % save data
 save(fname, 'out');
@@ -112,7 +117,7 @@ Master9.ConnectChannel(1, 2);
 Master9.ChangeChannelMode(2, cmTrain);		
 Master9.SetChannelDuration(2, 40e-3); 
 Master9.SetChannelInterval(2, 100e-3);
-Master9.SetChannelN(2, 40);
+Master9.SetChannelN(2, out.duration/100e-3);
 Master9.ConnectChannel(2, 3);
 
 % channel #3: delivering eletric stimulation
@@ -124,6 +129,8 @@ Master9.SetChannelN(3, 4);
 Master9.SetChannelShape(3,csMonopolar);
 %Master9.SetChannelShape(3,csRamp);
 
+out.Master9_setting = Master9;
+save(fname, 'out');
 
 %% ready for scanning
 disp('======================================');
@@ -144,12 +151,26 @@ end
 %% Deliver the electrical stimulations
 
 for i = 1:numel(onsets)
+    
+    clc;
+    str{1} = sprintf('Trial# %02d', i);
+    str{2} = sprintf('Stimulus intensity: %d (mA)', out.stim_intensity_mA(i));
     if i == 1
-        WaitSecs(disdaq+3); % 8 seconds for disdaq, 3 seconds for baseline
+        str{3} = sprintf('Time left: %d (s)', out.disdaq_in_secs + onsets(i));
+    else
+        str{3} = sprintf('Time left: %d (s)', out.iti(i-1));
+    end
+    disp('=============================================================');
+    for j = 1:numel(str), disp(str{j}); end
+    disp('=============================================================');
+    
+    if i == 1
+        WaitSecs(out.disdaq_in_secs + onsets(i)); % 8 seconds for disdaq, 3 seconds for baseline
+    else
+        WaitSecs(iti(i-1));
     end
     
     Master9.Trigger(1);
-    WaitSecs(iti(i));
     
 end
 

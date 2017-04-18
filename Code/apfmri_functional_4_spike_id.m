@@ -60,6 +60,8 @@ elseif numel(session_num) > 1
     end
 end
 
+dat.images_per_session(dat.images_per_session == 0) = [];
+
 diary(fullfile(PREPROC.qcdir, 'qc_spike_diary.txt'));
 dat = preprocess(dat, 'outliers', 'plot');  % Spike detect and globals by slice
     
