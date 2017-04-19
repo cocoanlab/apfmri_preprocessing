@@ -51,6 +51,8 @@ for session_num = session_n
     
     if numel(disdaq_n)>1
         disdaq = disdaq_n(session_num);
+    else
+        disdaq = disdaq_n;
     end
     
     str = ['Working on session #' num2str(session_num)];
