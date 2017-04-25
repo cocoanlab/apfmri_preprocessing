@@ -16,6 +16,11 @@ P             = cell(size(job.data));
 for i=1:numel(job.data),
     P{i} = char(job.data{i});
 end;
+
+% modification for inria_realign
+% flags.rho_func= 'geman';
+% flags.cutoff  = 2.5;
+
 flags.quality = job.eoptions.quality;
 flags.fwhm    = job.eoptions.fwhm;
 flags.sep     = job.eoptions.sep;
@@ -23,7 +28,10 @@ flags.rtm     = job.eoptions.rtm;
 flags.PW      = char(job.eoptions.weight);
 flags.interp  = job.eoptions.interp;
 flags.wrap    = job.eoptions.wrap;
+
 spm_realign(P,flags);
+% inria_realign(P,flags);
+
 for i=1:numel(job.data)
     out.sess(i).cfiles = job.data{i};
     [pth,nam,ext,num]  = spm_fileparts(job.data{i}{1});

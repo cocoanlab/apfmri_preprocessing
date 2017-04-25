@@ -1,10 +1,10 @@
-subject_dir = '/Volumes/Wani_8T/data/APFmri/Imaging/mango_170419';
-subject_code = 'mango_170419';
+subject_dir = '/Volumes/Wani_8T/data/APFmri/Imaging/maple_170412';
+subject_code = 'maple_170412';
 
 behavioral_datdir = fullfile(fileparts(fileparts(subject_dir)), 'Behavioral', subject_code);
 clear dat;
 k = 0;
-for i = [6 7] % run number
+for i = [3 4 5 7 8] % run number
 
     k = k + 1;
     datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code, i)), 'char');
@@ -22,15 +22,17 @@ for i = [6 7] % run number
 %         event_regressor = onsets2fmridesign({[new_onsets' out.duration*ones(size(new_onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1));
 %         out.event_regressor(:,j-6) = event_regressor(:,1);
 %     end
-    out.event_regressor = onsets2fmridesign({[out.onsets' out.duration*ones(size(out.onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1));
-%     out.event_regressor = onsets2fmridesign({[out.onsets' out.duration*ones(size(out.onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1), 'parametric_standard', {out.stim_intensity_mA'});
+    %out.event_regressor = onsets2fmridesign({[out.onsets' out.duration*ones(size(out.onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1), 'parametric_standard', {out.stim_intensity_mA'});
         
+    event_regressor = onsets2fmridesign({[(out.onsets+4)' 4*ones(size(out.onsets'))]}, out.TR, (out.img_number-5)*out.TR, spm_hrf(1));
     % dat{k}.X = out.event_regressor(:,1:2);
-    dat{k}.X = out.event_regressor;
+    dat{k}.X = event_regressor(:,1);
     dat{k}.covariates = [PREPROC.nuisance.mvmt_covariates{i} PREPROC.nuisance.mvmt_covariates{i}.^2 ...
         [zeros(1,6); diff(PREPROC.nuisance.mvmt_covariates{i})] [zeros(1,6); diff(PREPROC.nuisance.mvmt_covariates{i})].^2];
 
-    dat{k}.covariates = [dat{k}.covariates PREPROC.nuisance.spike_covariates{i}];
+%     spikes = PREPROC.nuisance.spike_covariates((515*(i-1)+1):(515*i),:);
+
+%     dat{k}.covariates = [dat{k}.covariates spikes(:,any(spikes))];
     linear_trend = scale(1:size(dat{k}.covariates,1))';
     dat{k}.covariates = [dat{k}.covariates linear_trend];
 end
@@ -46,28 +48,20 @@ end
 
 dat_new.covariates = [];
 
-for i = 1:numel(dat)
-    cov_coln(i) = size(dat{i}.covariates,2);
-end
-
-dat_new.covariates = zeros(size(dat_new.X,1),sum(cov_coln));
-
-img_n = size(dat{1}.dat,2);
+dat_new.covariates = zeros(size(dat_new.X,1),25*numel(dat));
 
 for i = 1:numel(dat)
-    if i == 1
-        dat_new.covariates((img_n*(i-1)+1):(img_n*i),1:cov_coln(i)) = dat{i}.covariates;
-    else
-        dat_new.covariates((img_n*(i-1)+1):(img_n*i),(cov_coln(i-1)+1):(cov_coln(i-1)+cov_coln(i))) = dat{i}.covariates;
-    end
+    dat_new.covariates((515*(i-1)+1):(515*i),(25*(i-1)+1):(25*i)) = dat{i}.covariates;
 end
 
-dat_new.covariates = [dat_new.covariates blkdiag(ones(img_n,1),ones(img_n,1))];
+dat_new.covariates = [dat_new.covariates PREPROC.nuisance.spike_covariates];
+
+dat_new.covariates = [dat_new.covariates blkdiag(ones(515,1),ones(515,1),ones(515,1),ones(515,1),ones(515,1))];
 
 dat_new.X = [dat_new.X dat_new.covariates(:,1:(end-1))];
 
 %% 14(Both quick and no-quick). Regression and threshold 
-stats = regress(dat_new, .01, 'unc');
+stats = regress(dat_new, .001, 'unc');
 
 %%
 j= 1;
@@ -82,7 +76,7 @@ b_dat = fmri_data(stats1.b);
 % orthviews(b_dat, 'overlay', PREPROC.or_anat_files{1})
 
 b_dat.dat = b_dat.dat .* stats1.b.sig;
-% orthviews(b_dat, 'overlay', PREPROC.wor_anat_files{1})
+% orthviews(b_dat, 'overlay', PREPROC.or_anat_files{1})
 orthviews_rhesus(b_dat)
 
 

@@ -78,7 +78,11 @@ saveas(gcf,qcspikefilename);
 if numel(session_num) == 1
     PREPROC.nuisance.spike_covariates{session_num} = dat.covariates; % the first one is global signal, that I don't need.
 else
-    PREPROC.nuisance.spike_covariates = dat.covariates; % the first one is global signal, that I don't need.
+    img_n_per_session = size(dat.covariates,1)/numel(session_num);
+    for i = 1:numel(session_num)
+        spikes = dat.covariates((img_n_per_session*(i-1)+1):(img_n_per_session*i),:);
+        PREPROC.nuisance.spike_covariates{session_num(i)} = spikes(:,any(spikes)); % the first one is global signal, that I don't need.
+    end
 end
 
 save_load_PREPROC(subject_dir, 'save', PREPROC); % save PREPROC

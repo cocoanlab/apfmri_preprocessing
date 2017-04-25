@@ -1,13 +1,13 @@
 %% 1. BASIC SETTING
 
-scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
-% scriptdir = '/Users/clinpsywoo/github/apfmri_preprocessing'; % Wani's computer setting
+% scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
+scriptdir = '/Users/clinpsywoo/github/apfmri_preprocessing'; % Wani's computer setting
 apfmri_pathdef(scriptdir);
 
 %% Subject directory, and create some data directories for you
 
-basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
-% basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
+% basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
+basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
 subject_code = 'mango_170419';
 subject_dir = apfmri_structural_0_make_directories(subject_code, basedir);
 
@@ -22,7 +22,7 @@ apfmri_structural_1_dicom2nifti(subject_dir);
 
 %% 3(QUICK). DICOM TO NIFTI: FUNCTIONAL -- to get reference ===============
 
-session_num = 1:5;
+session_num = 6:7;
 disdaq = 5;
 
 % session_num = 1:8;
@@ -32,7 +32,7 @@ apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
 %% 4(QUICK). save implicit mask and mean functional image =================
 
-session_num = 1:5;
+%session_num = 1:2;
 apfmri_functional_2_implicitmask_savemean(subject_dir, session_num);
 
 
@@ -76,7 +76,7 @@ apfmri_functional_4_spike_id(subject_dir, session_num);
 % apfmri_functional_5_slice_timing(subject_dir, session_num, 'TR', 1.2, 'MBF', 2, 'acq', 'interleaved_TD');
 
 %% OPTIONAL: you can directly get slice timing info from dicom file
-dicom_img = filenames(fullfile(subject_dir, 'Functional', 'dicom', 'r01*', '*IMA'));
+dicom_img = filenames(fullfile(subject_dir, 'Functional', 'dicom', 'r06*', '*IMA'));
 hdr = dicominfo(dicom_img{1});
 slice_time = hdr.Private_0019_1029;
 

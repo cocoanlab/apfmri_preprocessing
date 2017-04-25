@@ -25,7 +25,7 @@ out.duration = input('Duration of stim? ');
 out.datetime = scn_get_datetime;
 
 %% output filename
-fname = fullfile(savedir, ['out_' out.MID '_sess' out.sessN '_' out.date '.mat']);
+fname = fullfile(savedir, ['out_' out.MID '_sess' out.sessN '_' out.datetime '.mat']);
 
 out.fname = fname;
 
@@ -46,10 +46,12 @@ end
 
 %% generating stimulus time sequence
 
-iti = repmat([20 26 32 38], 1, 7);
+repetition = 6;
+
+iti = repmat([20 26 32 38], 1, repetition);
 iti = iti(randperm(numel(iti)));
 
-out.stim_intensity_mA = repmat([7 8 9 10], 1, 7);
+out.stim_intensity_mA = repmat([7 8 9 10], 1, repetition);
 out.stim_intensity_mA = out.stim_intensity_mA(randperm(numel(out.stim_intensity_mA)));
 
 onsets = [];
@@ -151,14 +153,16 @@ end
 %% Deliver the electrical stimulations
 
 for i = 1:numel(onsets)
-    
+    if i ~= 1
+        WaitSecs(out.duration);
+    end
     clc;
     str{1} = sprintf('Trial# %02d', i);
     str{2} = sprintf('Stimulus intensity: %d (mA)', out.stim_intensity_mA(i));
     if i == 1
         str{3} = sprintf('Time left: %d (s)', out.disdaq_in_secs + onsets(i));
     else
-        str{3} = sprintf('Time left: %d (s)', out.iti(i-1));
+        str{3} = sprintf('Time left: %d (s)', out.iti(i-1)-out.duration);
     end
     disp('=============================================================');
     for j = 1:numel(str), disp(str{j}); end
@@ -167,14 +171,13 @@ for i = 1:numel(onsets)
     if i == 1
         WaitSecs(out.disdaq_in_secs + onsets(i)); % 8 seconds for disdaq, 3 seconds for baseline
     else
-        WaitSecs(iti(i-1));
+        WaitSecs(iti(i-1)-out.duration);
     end
     
     Master9.Trigger(1);
     
 end
 
-% save data
 save(fname, 'out');
 
 end
