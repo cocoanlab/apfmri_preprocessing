@@ -1,14 +1,14 @@
 %% 1. BASIC SETTING
 
-% scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
-scriptdir = '/Users/clinpsywoo/github/apfmri_preprocessing'; % Wani's computer setting
+scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
+% scriptdir = '/Users/clinpsywoo/github/apfmri_preprocessing'; % Wani's computer setting
 apfmri_pathdef(scriptdir);
 
 %% Subject directory, and create some data directories for you
 
-% basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
-basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
-subject_code = 'mango_170419';
+basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
+% basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
+subject_code = 'mango_170510';
 subject_dir = apfmri_structural_0_make_directories(subject_code, basedir);
 
 % or directly provide subject_dir
@@ -22,8 +22,8 @@ apfmri_structural_1_dicom2nifti(subject_dir);
 
 %% 3(QUICK). DICOM TO NIFTI: FUNCTIONAL -- to get reference ===============
 
-session_num = 6:7;
-disdaq = 5;
+session_num = 4:6;
+disdaq = 4;
 
 % session_num = 1:8;
 % disdaq = [5 5 5 5 5 4 5 5]; % you can put different numbers of disdaq
@@ -55,8 +55,8 @@ apfmri_structural_5_segment(subject_dir);
 
 
 %% 7(QUICK). DICOM TO NIFTI: FUNCTIONAL (RUN2) ============================
-session_num = 1:5;
-disdaq = 5;
+session_num = 7;
+disdaq = 4;
 
 apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
@@ -105,15 +105,16 @@ apfmri_functional_9_move_clean_files(subject_dir, session_num, 'move_only');
 
 % basedir = '/Volumes/Wani_8T/data/APFmri/maple_170412/';
 % behavioral_datdir = fullfile(fileparts(subject_dir), 'Behavioral');
-behavioral_datdir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Behavioral/mango_170419';
+behavioral_datdir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Behavioral/mango_170510';
+subject_code2 = 'Mango';
 
-i = 3; % run number
-datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code, i)), 'char');
+i = 1; % run number
+datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code2, i)), 'char');
 load(datfiles);
 
 PREPROC = save_load_PREPROC(subject_dir, 'load');
 
-PREPROC.TR = 1.4;
+PREPROC.TR = 2;
 
 dat = fmri_data_rhesus(PREPROC.o_func_files{i});
 dat = preprocess(dat, 'smooth', 3);  % smooth
@@ -123,13 +124,17 @@ dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR); % high-pass filter
 % img_n = out.img_number-disdaq;
 % duration = 4; % in seconds
 % 
-out.event_regressor = onsets2fmridesign({[out.onsets' out.duration*ones(size(out.onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1), 'parametric_standard', {out.stim_intensity_mA'});
+% out.img_number = 360;
+out.event_regressor = onsets2fmridesign({[out.onsets' out.duration*ones(size(out.onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1));
 
 dat.X = out.event_regressor(:,1:2);
+dat.X(:,1) = scale(dat.X(:,1));
 dat.covariates = PREPROC.nuisance.spike_covariates{i};
-linear_trend = scale(1:size(dat.covariates,1),1)';
+linear_trend = scale(1:size(dat.covariates,1))';
 dat.covariates = [dat.covariates linear_trend]; % linear trend
 
+dat.X = [dat.X dat.covariates];
+figure; imagesc(dat.X);
 
 %% 13-2 (Using all the session data). Regression 
 
@@ -164,9 +169,9 @@ dat.covariates = [dat.covariates linear_trend]; % linear trend
 
 
 %% 14(Both quick and no-quick). Regression and threshold 
-stats = regress(dat, .01, 'unc');
+stats = regress(dat, .001, 'unc');
 
-j = 1;
+j = 1; % regressor of interest
 stats.b.dat = stats.b.dat(:,j);
 stats.b.sig = stats.b.sig(:,j);
 stats.b.p = stats.b.p(:,j);
