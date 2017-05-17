@@ -8,7 +8,7 @@ apfmri_pathdef(scriptdir);
 
 basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
 % basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
-subject_code = 'mango_170510';
+subject_code = 'maple_170517_TR12';
 subject_dir = apfmri_structural_0_make_directories(subject_code, basedir);
 
 % or directly provide subject_dir
@@ -22,8 +22,8 @@ apfmri_structural_1_dicom2nifti(subject_dir);
 
 %% 3(QUICK). DICOM TO NIFTI: FUNCTIONAL -- to get reference ===============
 
-session_num = 4:6;
-disdaq = 4;
+session_num = 1:3;
+disdaq = 5;
 
 % session_num = 1:8;
 % disdaq = [5 5 5 5 5 4 5 5]; % you can put different numbers of disdaq
@@ -55,8 +55,8 @@ apfmri_structural_5_segment(subject_dir);
 
 
 %% 7(QUICK). DICOM TO NIFTI: FUNCTIONAL (RUN2) ============================
-session_num = 7;
-disdaq = 4;
+session_num = 4;
+disdaq = 5;
 
 apfmri_functional_1_dicom2nifti(subject_dir, session_num, disdaq);
 
@@ -105,16 +105,16 @@ apfmri_functional_9_move_clean_files(subject_dir, session_num, 'move_only');
 
 % basedir = '/Volumes/Wani_8T/data/APFmri/maple_170412/';
 % behavioral_datdir = fullfile(fileparts(subject_dir), 'Behavioral');
-behavioral_datdir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Behavioral/mango_170510';
-subject_code2 = 'Mango';
+behavioral_datdir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Behavioral/maple_170517';
+subject_code2 = 'maple_170517';
 
-i = 1; % run number
-datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code2, i)), 'char');
+i = 2; % run number
+datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code2, i+3)), 'char');
 load(datfiles);
 
 PREPROC = save_load_PREPROC(subject_dir, 'load');
 
-PREPROC.TR = 2;
+PREPROC.TR = 1.2;
 
 dat = fmri_data_rhesus(PREPROC.o_func_files{i});
 dat = preprocess(dat, 'smooth', 3);  % smooth
@@ -128,7 +128,7 @@ dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR); % high-pass filter
 out.event_regressor = onsets2fmridesign({[out.onsets' out.duration*ones(size(out.onsets'))]}, out.TR, (out.img_number-out.disdaq)*out.TR, spm_hrf(1));
 
 dat.X = out.event_regressor(:,1:2);
-dat.X(:,1) = scale(dat.X(:,1));
+% dat.X(:,1) = scale(dat.X(:,1));
 dat.covariates = PREPROC.nuisance.spike_covariates{i};
 linear_trend = scale(1:size(dat.covariates,1))';
 dat.covariates = [dat.covariates linear_trend]; % linear trend
@@ -137,17 +137,17 @@ dat.X = [dat.X dat.covariates];
 figure; imagesc(dat.X);
 
 %% 13-2 (Using all the session data). Regression 
-
+subject_code = 'maple_170517';
 behavioral_datdir = fullfile(fileparts(fileparts(subject_dir)), 'Behavioral', subject_code);
 
 i = 1; % run number
-datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code, i)), 'char');
+datfiles = filenames(fullfile(behavioral_datdir, sprintf('out_%s_sess%d_*mat', subject_code, i+3)), 'char');
 load(datfiles);
 
 PREPROC = save_load_PREPROC(subject_dir, 'load');
 
 dat = fmri_data_rhesus(PREPROC.swrao_func_files{i});
-dat = preprocess(dat, 'hpfilter', 125, PREPROC.TR); % high-pass filter
+dat = preprocess(dat, 'hpfilter', 100, PREPROC.TR); % high-pass filter
 
 % disdaq = 5;
 % img_n = out.img_number-disdaq;
