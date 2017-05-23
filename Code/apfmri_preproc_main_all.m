@@ -1,13 +1,16 @@
 %% 1. BASIC SETTING
 
-scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
+% scriptdir = '/Users/cnir/Documents/cocoanlab/github/apfmri_preprocessing'; % CNIR MRI setting
 % scriptdir = '/Users/clinpsywoo/github/apfmri_preprocessing'; % Wani's computer setting
+scriptdir = '/Resources/github/cocoanlab/apfmri_preprocessing'; % habenula's computer setting
 apfmri_pathdef(scriptdir);
 
 %% Subject directory, and create some data directories for you
 
-basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
+% basedir = '/Users/cnir/Documents/cocoanlab/animal_fMRI/Imaging'; % CNIR MRI setting
 % basedir = '/Volumes/Wani_8T/data/APFmri/Imaging'; % Wani's computer setting
+basedir = '/Volumes/habenula/monkeynas/APFmri/Imaging'; % Habenula's computer setting
+
 subject_code = 'maple_170517_TR12';
 subject_dir = apfmri_structural_0_make_directories(subject_code, basedir);
 
