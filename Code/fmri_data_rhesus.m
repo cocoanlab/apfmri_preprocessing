@@ -12,9 +12,10 @@ function obj = fmri_data_rhesus(image_names, maskinput, varargin)
 % ::
 %    please see fmri_data for more information
 
-
+% brainmask_rhesus.nii is somewhat blurred...
+% brainmask_rhesus2.nii deleted all the values below zero in brainmask.nii
 if nargin < 2 || isempty(maskinput)
-    maskinput = which('brainmask_rhesus.nii');
+    maskinput = which('NMT_brainmask.nii');
 end
 
 obj = fmri_data(image_names, maskinput, varargin);
