@@ -14,6 +14,9 @@ function obj = fmri_data_rhesus(image_names, maskinput, varargin)
 
 % brainmask_rhesus.nii is somewhat blurred...
 % brainmask_rhesus2.nii deleted all the values below zero in brainmask.nii
+
+
+% need NMT in https://github.com/jms290/NMT
 if nargin < 2 || isempty(maskinput)
     maskinput = which('NMT_brainmask.nii');
 end
