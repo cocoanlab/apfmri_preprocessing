@@ -17,6 +17,11 @@ function obj = fmri_data_rhesus(image_names, maskinput, varargin)
 
 
 % need NMT in https://github.com/jms290/NMT
+if isempty(varargin);
+    image_names = which('NMT_brainmask.nii');
+    maskinput = which('NMT_brainmask.nii');
+end
+
 if nargin < 2 || isempty(maskinput)
     maskinput = which('NMT_brainmask.nii');
 end
