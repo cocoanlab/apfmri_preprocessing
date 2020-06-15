@@ -24,7 +24,7 @@
 
 %overlay = which('SPM8_colin27T1_seg.img');
 %overlay = which('wisconsin_rhesus_atlas.nii');
-overlay = which('NMT_SS.nii.gz');
+overlay = which('NMT_SS.nii');
 
 ovidx = find(strcmp(varargin, 'overlay'), 1);
 if ~isempty(ovidx)
